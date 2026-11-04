@@ -3,6 +3,7 @@ import csv
 import json
 import time
 import argparse
+import os
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
 
@@ -13,10 +14,10 @@ from confluent_kafka import Producer
 # CONFIGURATION
 # ==================================================
 
-KAFKA_SERVER = "localhost:9092"
-TOPIC_NAME = "ride_requests"
+KAFKA_SERVER = os.getenv("KAFKA_BROKER", "localhost:9092")
+TOPIC_NAME = os.getenv("KAFKA_INPUT_TOPIC", "ride_requests")
 
-DATASET_PATH = Path("rides_contextual_synthetic.csv")
+DATASET_PATH = Path(os.getenv("RIDE_DATASET_PATH", "rides_contextual_synthetic.csv"))
 
 INDIA_TIMEZONE = timezone(timedelta(hours=5, minutes=30))
 

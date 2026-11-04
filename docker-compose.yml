@@ -17,6 +17,59 @@ services:
       - ALLOW_PLAINTEXT_LISTENER=yes
     volumes:
       - kafka_data:/bitnami/kafka
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  streaming:
+    build:
+      context: .
+      dockerfile: Dockerfile.streaming
+    container_name: bengaluru-demand-streaming
+    environment:
+      KAFKA_BROKER: kafka:9092
+      KAFKA_INPUT_TOPIC: ride_requests
+      KAFKA_OUTPUT_TOPIC: predictions
+      STREAMING_API_PORT: 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ml_results:/app/ml_results:ro
+      - ./public/data:/app/public/data:ro
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  producer:
+    build:
+      context: .
+      dockerfile: Dockerfile.streaming
+    container_name: bengaluru-demand-producer
+    command: ["python", "kafka_ride_producer.py", "--limit", "100000", "--speedup", "3600", "--max-sleep", "0.02"]
+    environment:
+      KAFKA_BROKER: kafka:9092
+      KAFKA_INPUT_TOPIC: ride_requests
+      RIDE_DATASET_PATH: /data/rides_contextual_synthetic.csv
+    volumes:
+      - ./kafka_ride_producer.py:/app/kafka_ride_producer.py:ro
+      - ./rides_contextual_synthetic.csv:/data/rides_contextual_synthetic.csv:ro
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: bengaluru-demand-web
+    environment:
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - streaming
 
 volumes:
   kafka_data:

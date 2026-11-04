@@ -1,0 +1,13 @@
+.git
+.next
+node_modules
+__pycache__
+*.pyc
+*.xlsx
+*.csv
+*.joblib
+EDA_Results
+EDA_Results_New
+validation
+docs
+ml_results
