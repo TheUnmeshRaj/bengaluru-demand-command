@@ -1,37 +1,46 @@
-# Ride-Heli // Urban Cab & Taxi Mobility for Bengaluru
+# Bengaluru ride-demand command center
 
-> **Ride-Heli** (*ಹೇಳಿ* — meaning *"Tell me"* in Kannada) is a voice-first, surge-free cab and taxi ride-hailing platform designed with **Swiss Modernism** and a clean **Bento Grid** layout.
+This project demonstrates real-time, zone-level ride-demand prediction for
+Bengaluru using the supplied synthetic ride, weather, event, and ML outputs.
 
----
+## Dashboard
 
-## ⚡ The Concept: Why “Heli”?
+The Next.js dashboard includes:
 
-In Kannada, **“ಹೇಳಿ” (Heli)** is the warm, respectful invitation to *“Tell me / Speak where you want to go”*.
+- OpenStreetMap hotspot visualization for the 52 project zones
+- Browser location and clearly labeled simulated driver markers
+- Simple mobile driver plan with hotspot recommendations and alerts
+- Prediction register for the next 15 minutes
+- Dedicated Kafka pipeline page with live service counters and logs
 
-Instead of navigating complicated menus or dealing with aggressive price surges, Ride-Heli lets passengers speak their destination naturally in Kannada or English (*"ಇಂದಿರಾನಗರದಿಂದ ಏರ್‌ಪೋರ್ಟ್‌ಗೆ ಕ್ಯಾಬ್ ಹೇಳಿ"* / *"Heli: Book cab to Airport"*), dispatching the nearest cab or auto in under 3 minutes.
+## Streaming architecture
 
----
-
-## 🎨 Swiss Modernist Aesthetic
-
-- **Design Philosophy**: Rational, clean, structured, and calm — free from noisy sci-fi clutter.
-- **Palette**: Deep charcoal surfaces (`#0a0b0e`, `#101217`, `#171920`) with surgical electric lime accents (`#d4ff00`), crisp white typography, and hairline structural borders (`#222631`).
-- **Typography**: Bold grotesque sans-serif (`Plus Jakarta Sans` / `Inter`) with monospaced numerical metadata (`JetBrains Mono`).
-- **Bento Grid Architecture**:
-  1. **Live Bengaluru Spatial Map**: 52-zone distribution across Indiranagar, Koramangala, Whitefield, MG Road, HSR, Airport, and Electronic City with real-time cab glides.
-  2. **Instant Cab Dispatch**: 4 fleet tiers (**Heli EV**, **Heli Prime Sedan**, **Heli Mini**, **Heli Auto**) with transparent fixed pricing.
-  3. **“ಹೇಳಿ” (Heli) Voice Assistant**: Interactive speech-to-dispatch simulation supporting Kannada and English.
-  4. **Zone Demand & Wait Times**: Real-time cab density and 1.0x fair fare index across key hubs.
-  5. **Fleet Specifications & Driver Transparency**: Vehicle specs with driver-first 85% fare payout guarantee.
-  6. **Digital Ride Confirmation Pass**: Clean Swiss receipt modal with 4-digit start OTP, driver credentials, and live trip share.
-
----
-
-## 🚀 Getting Started
-
-```bash
-npm install
-npm run dev
+```text
+rides_contextual_synthetic.csv
+  -> Kafka ride_requests topic
+  -> five-minute zone aggregation
+  -> next-15-minute persistence baseline
+  -> Kafka predictions topic
+  -> streaming API
+  -> Next.js dashboard
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+The live Docker service uses the project-defined persistence baseline
+(`3 × rolling 15-minute mean`) so the demo remains lightweight. The trained
+contextual model files remain available under `ml_results/models/` for the
+offline training and evaluation workflow.
+
+## Run
+
+```powershell
+docker compose up --build -d
+```
+
+Open the dashboard at <http://localhost:3000>. Follow the actual pipeline with:
+
+```powershell
+docker compose logs -f kafka streaming producer
+```
+
+The supplied event file contains synthetic scenarios. It does not contain a
+Diwali event, so the dashboard does not present Diwali as a project fact.
