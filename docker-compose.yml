@@ -33,6 +33,7 @@ services:
       KAFKA_BROKER: kafka:9092
       KAFKA_INPUT_TOPIC: ride_requests
       KAFKA_OUTPUT_TOPIC: predictions
+      KAFKA_LOG_TOPIC: pipeline_logs
       STREAMING_API_PORT: 8000
     ports:
       - "8000:8000"
@@ -51,6 +52,7 @@ services:
     environment:
       KAFKA_BROKER: kafka:9092
       KAFKA_INPUT_TOPIC: ride_requests
+      KAFKA_LOG_TOPIC: pipeline_logs
       RIDE_DATASET_PATH: /data/rides_contextual_synthetic.csv
     volumes:
       - ./kafka_ride_producer.py:/app/kafka_ride_producer.py:ro

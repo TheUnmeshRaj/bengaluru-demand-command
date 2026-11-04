@@ -19,16 +19,15 @@ The Next.js dashboard includes:
 rides_contextual_synthetic.csv
   -> Kafka ride_requests topic
   -> five-minute zone aggregation
-  -> next-15-minute persistence baseline
+  -> next-15-minute Random Forest contextual prediction
   -> Kafka predictions topic
   -> streaming API
   -> Next.js dashboard
 ```
 
-The live Docker service uses the project-defined persistence baseline
-(`3 × rolling 15-minute mean`) so the demo remains lightweight. The trained
-contextual model files remain available under `ml_results/models/` for the
-offline training and evaluation workflow.
+The live Docker service loads the trained `RandomForest_contextual.joblib`
+model and uses the same historical, weather, event, and zone features defined
+by the project training pipeline.
 
 ## Run
 

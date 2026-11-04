@@ -8,7 +8,7 @@ The project now has a Docker Compose demo with these services:
 2. **Streaming service** on `localhost:8000`
    - Consumes the `ride_requests` topic
    - Closes five-minute zone windows
-   - Uses the project-defined persistence baseline in the live lightweight container
+   - Loads the trained Random Forest contextual model
    - Predicts `Target_Next_15min`
    - Publishes predictions to the `predictions` topic
    - Exposes live state at `/state`
@@ -18,7 +18,7 @@ The project now has a Docker Compose demo with these services:
    - The Compose demo is bounded to 100,000 events
 4. **Next.js dashboard** on `localhost:3000`
    - Uses live streaming state when the API is connected
-   - Shows `Demo fallback` when Kafka is unavailable
+   - Shows a clear Kafka live/offline status when the API is unavailable
    - Includes hotspot map, driver view, mock drivers, browser location, predictions, and Kafka logs
 
 The dashboard uses a **five-minute aggregation window** and predicts demand for
@@ -76,8 +76,8 @@ docker compose down
 
 ## Important note
 
-The live Docker demo uses the project-defined persistence baseline to stay
-lightweight: `3 × rolling 15-minute mean`. The trained contextual model files
+The live Docker demo loads `ml_results/models/RandomForest_contextual.joblib`.
+The model runtime is pinned to scikit-learn 1.6.1, matching the model artifact.
 remain in `ml_results/models/` for the offline training and evaluation path.
 The large source datasets are mounted only where needed and are excluded from
 the web image. No Git LFS configuration is used.

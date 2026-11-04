@@ -22,6 +22,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+import joblib
+import pandas as pd
 from confluent_kafka import Consumer, KafkaError, KafkaException, Producer
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -30,7 +32,10 @@ ROOT = Path(__file__).resolve().parent
 BROKER = os.getenv("KAFKA_BROKER", "localhost:9092")
 INPUT_TOPIC = os.getenv("KAFKA_INPUT_TOPIC", "ride_requests")
 OUTPUT_TOPIC = os.getenv("KAFKA_OUTPUT_TOPIC", "predictions")
+LOG_TOPIC = os.getenv("KAFKA_LOG_TOPIC", "pipeline_logs")
 GROUP_ID = os.getenv("KAFKA_GROUP_ID", "bengaluru-demand-predictor")
+LOG_GROUP_ID = os.getenv("KAFKA_LOG_GROUP_ID", "bengaluru-dashboard-log-reader")
+MODEL_PATH = ROOT / "ml_results" / "models" / "RandomForest_contextual.joblib"
 ZONE_DATA_PATH = ROOT / "public" / "data" / "dashboard.json"
 IST = timezone(timedelta(hours=5, minutes=30))
 
@@ -53,7 +58,7 @@ state: dict[str, Any] = {
     "outputTopic": OUTPUT_TOPIC,
     "window": "5 minutes",
     "horizon": "15 minutes",
-    "predictor": "Persistence_baseline",
+    "predictor": "RandomForest_contextual",
     "delivery": "acks=all, idempotence enabled",
     "lastWindow": None,
     "consumed": 0,
@@ -136,6 +141,7 @@ def feature_row(
 
 
 def publish_predictions(
+    model: Any,
     producer: Producer,
     counts: dict[str, int],
     histories: dict[str, deque[float]],
@@ -143,11 +149,15 @@ def publish_predictions(
     timestamp: datetime,
 ) -> None:
     zone_ids = sorted(set(ZONE_NAMES) | set(counts))
-    for zone_id in zone_ids:
-        count = counts.get(zone_id, 0)
-        history = list(histories[zone_id]) + [float(count)]
-        recent = history[-3:]
-        value = max(0.0, 3.0 * (sum(recent) / len(recent)))
+    rows = [
+        feature_row(zone_id, timestamp, counts.get(zone_id, 0), histories[zone_id], contexts.get(zone_id, {}))
+        for zone_id in zone_ids
+    ]
+    predictions = model.predict(pd.DataFrame(rows))
+    for row, prediction in zip(rows, predictions):
+        zone_id = row["Zone_ID"]
+        count = row["Demand_Last_5min"]
+        value = max(0.0, float(prediction))
         context = contexts.get(zone_id, {})
         event = {
             "schema_version": 1,
@@ -157,7 +167,7 @@ def publish_predictions(
             "zone": ZONE_NAMES.get(zone_id, zone_id),
             "predicted_demand": round(value, 2),
             "demand_last_5min": count,
-            "model": "Persistence_baseline",
+            "model": "RandomForest_contextual",
         }
         producer.produce(
             OUTPUT_TOPIC,
@@ -184,13 +194,44 @@ def publish_predictions(
             }
     producer.flush(10)
     with state_lock:
-        state["published"] += len(rows)
+        state["published"] += len(zone_ids)
         state["lastWindow"] = timestamp.strftime("%Y-%m-%d %H:%M:%S")
         state["logs"].appendleft({
             "time": datetime.now(IST).strftime("%H:%M:%S"),
             "level": "PRED",
-            "message": f"Forecast published · horizon=15m · {len(rows)} zones",
+            "message": f"Forecast published · model=RandomForest_contextual · horizon=15m · {len(zone_ids)} zones",
         })
+
+
+def append_log(level: str, message: str) -> None:
+    with state_lock:
+        state["logs"].appendleft({
+            "time": datetime.now(IST).strftime("%H:%M:%S"),
+            "level": level,
+            "message": message,
+        })
+
+
+def log_consumer_loop() -> None:
+    consumer = Consumer({
+        "bootstrap.servers": BROKER,
+        "group.id": LOG_GROUP_ID,
+        "auto.offset.reset": "latest",
+        "enable.auto.commit": True,
+    })
+    consumer.subscribe([LOG_TOPIC])
+    append_log("INFO", f"Log reader subscribed to {LOG_TOPIC}")
+    try:
+        while True:
+            message = consumer.poll(1.0)
+            if message is None or message.error():
+                continue
+            payload = json.loads(message.value().decode("utf-8"))
+            append_log(payload.get("level", "INFO"), payload.get("message", "Kafka event received"))
+    except Exception:
+        logger.exception("Kafka log consumer stopped")
+    finally:
+        consumer.close()
 
 
 def consume_loop() -> None:
@@ -206,6 +247,7 @@ def consume_loop() -> None:
         "acks": "all",
         "client.id": "bengaluru-demand-predictor",
     })
+    model = joblib.load(MODEL_PATH)
     counts: dict[str, int] = defaultdict(int)
     histories: dict[str, deque[float]] = defaultdict(lambda: deque(maxlen=12))
     contexts: dict[str, dict[str, Any]] = {}
@@ -241,7 +283,7 @@ def consume_loop() -> None:
             if active_window is None:
                 active_window = current_window
             if current_window != active_window:
-                publish_predictions(producer, counts, histories, contexts, active_window)
+                publish_predictions(model, producer, counts, histories, contexts, active_window)
                 for zone_id in set(ZONE_NAMES) | set(counts):
                     histories[zone_id].append(float(counts.get(zone_id, 0)))
                 counts = defaultdict(int)
@@ -278,4 +320,5 @@ if __name__ == "__main__":
     import uvicorn
 
     threading.Thread(target=consume_loop, daemon=True).start()
+    threading.Thread(target=log_consumer_loop, daemon=True).start()
     uvicorn.run(app, host="127.0.0.1", port=int(os.getenv("STREAMING_API_PORT", "8000")))
