@@ -216,7 +216,7 @@ def log_consumer_loop() -> None:
     consumer = Consumer({
         "bootstrap.servers": BROKER,
         "group.id": LOG_GROUP_ID,
-        "auto.offset.reset": "latest",
+        "auto.offset.reset": "earliest",
         "enable.auto.commit": True,
     })
     consumer.subscribe([LOG_TOPIC])
@@ -238,7 +238,7 @@ def consume_loop() -> None:
     consumer = Consumer({
         "bootstrap.servers": BROKER,
         "group.id": GROUP_ID,
-        "auto.offset.reset": "latest",
+        "auto.offset.reset": "earliest",
         "enable.auto.commit": False,
     })
     producer = Producer({
@@ -321,4 +321,4 @@ if __name__ == "__main__":
 
     threading.Thread(target=consume_loop, daemon=True).start()
     threading.Thread(target=log_consumer_loop, daemon=True).start()
-    uvicorn.run(app, host="127.0.0.1", port=int(os.getenv("STREAMING_API_PORT", "8000")))
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("STREAMING_API_PORT", "8000")))
