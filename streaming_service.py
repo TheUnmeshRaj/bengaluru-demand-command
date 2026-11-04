@@ -36,6 +36,7 @@ LOG_TOPIC = os.getenv("KAFKA_LOG_TOPIC", "pipeline_logs")
 GROUP_ID = os.getenv("KAFKA_GROUP_ID", "bengaluru-demand-predictor")
 LOG_GROUP_ID = os.getenv("KAFKA_LOG_GROUP_ID", "bengaluru-dashboard-log-reader")
 IDLE_FLUSH_SECONDS = float(os.getenv("STREAM_IDLE_FLUSH_SECONDS", "3"))
+ALLOWED_LATENESS_MINUTES = float(os.getenv("STREAM_ALLOWED_LATENESS_MINUTES", "15"))
 MODEL_PATH = ROOT / "ml_results" / "models" / "RandomForest_contextual.joblib"
 ZONE_DATA_PATH = ROOT / "public" / "data" / "dashboard.json"
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -271,10 +272,10 @@ def consume_loop() -> None:
         "client.id": "bengaluru-demand-predictor",
     })
     model = joblib.load(MODEL_PATH)
-    counts: dict[str, int] = defaultdict(int)
     histories: dict[str, deque[float]] = defaultdict(lambda: deque(maxlen=12))
-    contexts: dict[str, dict[str, Any]] = {}
-    active_window: datetime | None = None
+    window_counts: dict[datetime, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    window_contexts: dict[datetime, dict[str, dict[str, Any]]] = defaultdict(dict)
+    max_event_time: datetime | None = None
     last_message_at = datetime.now(IST)
     seen_ids: set[str] = set()
     seen_order: deque[str] = deque(maxlen=100000)
@@ -291,13 +292,33 @@ def consume_loop() -> None:
         seen_ids.add(event_id)
         return True
 
-    def finalize_window(window: datetime) -> None:
+    def finalize_window(
+        window: datetime,
+        counts: dict[str, int],
+        contexts: dict[str, dict[str, Any]],
+    ) -> None:
         nonlocal finalized_window
         publish_predictions(model, producer, counts, histories, contexts, window)
         for zone_id in set(ZONE_NAMES) | set(counts):
             histories[zone_id].append(float(counts.get(zone_id, 0)))
         finalized_window = window
         append_log("INFO", f"Window closed · {window.strftime('%Y-%m-%d %H:%M:%S')} · {len(set(ZONE_NAMES) | set(counts))} zones")
+
+    def finalize_ready_windows(force: bool = False) -> None:
+        if not window_counts:
+            return
+        cutoff = None if force else (
+            max_event_time - timedelta(minutes=ALLOWED_LATENESS_MINUTES)
+            if max_event_time is not None
+            else None
+        )
+        ready = sorted(
+            window_counts
+            if force
+            else [window for window in window_counts if cutoff is not None and window <= cutoff]
+        )
+        for window in ready:
+            finalize_window(window, window_counts.pop(window), window_contexts.pop(window))
     consumer.subscribe([INPUT_TOPIC])
     logger.info("Connected to Kafka at %s; consuming %s", BROKER, INPUT_TOPIC)
     with state_lock:
@@ -310,11 +331,8 @@ def consume_loop() -> None:
         while True:
             message = consumer.poll(1.0)
             if message is None:
-                if active_window is not None and (datetime.now(IST) - last_message_at).total_seconds() >= IDLE_FLUSH_SECONDS:
-                    finalize_window(active_window)
-                    counts.clear()
-                    contexts.clear()
-                    active_window = None
+                if window_counts and (datetime.now(IST) - last_message_at).total_seconds() >= IDLE_FLUSH_SECONDS:
+                    finalize_ready_windows(force=True)
                     consumer.commit(asynchronous=False)
                 continue
             if message.error():
@@ -322,6 +340,14 @@ def consume_loop() -> None:
                     continue
                 raise KafkaException(message.error())
             event = json.loads(message.value().decode("utf-8"))
+            with state_lock:
+                state["consumed"] += 1
+                if state["consumed"] % 1000 == 0:
+                    state["logs"].appendleft({
+                        "time": datetime.now(IST).strftime("%H:%M:%S"),
+                        "level": "INFO",
+                        "message": f"Consumed {state['consumed']:,} ride events",
+                    })
             event_id = str(event.get("ride_id") or "")
             if not remember_event(event_id):
                 with state_lock:
@@ -331,12 +357,6 @@ def consume_loop() -> None:
             last_message_at = datetime.now(IST)
             with state_lock:
                 state["status"] = "connected"
-                if state["consumed"] % 1000 == 0:
-                    state["logs"].appendleft({
-                        "time": datetime.now(IST).strftime("%H:%M:%S"),
-                        "level": "INFO",
-                        "message": f"Consumed {state['consumed']:,} ride events",
-                    })
             timestamp = parse_event_time(event.get("event_time"))
             current_window = window_start(timestamp)
             if finalized_window is not None and current_window <= finalized_window:
@@ -344,19 +364,11 @@ def consume_loop() -> None:
                     state["lateEvents"] += 1
                 append_log("WARN", f"Late ride ignored · window={current_window.strftime('%H:%M:%S')}")
                 continue
-            if active_window is None:
-                active_window = current_window
-            if current_window != active_window:
-                finalize_window(active_window)
-                counts = defaultdict(int)
-                contexts = {}
-                active_window = current_window
-                consumer.commit(asynchronous=False)
             zone_id = str(event["pickup_zone_id"])
-            counts[zone_id] += 1
-            contexts[zone_id] = normalize_context(event)
-            with state_lock:
-                state["consumed"] += 1
+            window_counts[current_window][zone_id] += 1
+            window_contexts[current_window][zone_id] = normalize_context(event)
+            max_event_time = max(max_event_time, timestamp) if max_event_time is not None else timestamp
+            finalize_ready_windows()
     except Exception:
         with state_lock:
             state["status"] = "error"

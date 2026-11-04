@@ -19,7 +19,7 @@ type KafkaState = {
 
 const initialState: KafkaState = {
   status: "offline",
-  broker: "localhost:9092",
+  broker: "localhost:9094",
   inputTopic: "ride_requests",
   outputTopic: "predictions",
   window: "5 minutes",

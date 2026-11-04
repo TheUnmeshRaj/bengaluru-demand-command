@@ -103,7 +103,8 @@ live Kafka activity.
 ### Kafka
 
 - Image: `apache/kafka:3.9.0`
-- Host broker address: `localhost:9092`
+- Host broker address: `localhost:9094`
+- Host-side Kafka tools: `localhost:9094`
 - Internal Compose broker address: `kafka:9092`
 - Single-node KRaft configuration
 - Automatic topic creation enabled
@@ -175,7 +176,7 @@ Random Forest service.
 
 | Service | Purpose | Host access |
 |---|---|---|
-| `kafka` | Kafka broker | `localhost:9092` |
+| `kafka` | Kafka broker | `localhost:9094` |
 | `streaming` | Consumer, aggregation, prediction, API | `localhost:8000` |
 | `producer` | Synthetic ride replay | Container logs |
 | `web` | Next.js dashboard | `localhost:3000` |
@@ -279,6 +280,17 @@ A healthy replay reports delivered messages and zero failures. The consumer is
 configured with `earliest` offsets and the producer waits for streaming health,
 so a fresh Compose startup can consume the replay reliably.
 
+For a bounded smoke test before a full replay:
+
+```powershell
+docker compose run --rm producer python kafka_ride_producer.py --limit 100 --speedup 0
+```
+
+Expected state after the replay includes `status=connected`, consumed events,
+published predictions, `errors=0`, and `lateEvents=0`. Replaying the same first
+records again verifies duplicate handling; those records are counted under
+`duplicates` and are not predicted twice.
+
 ### Rebuild one service
 
 For a web-only change:
@@ -297,6 +309,13 @@ For producer changes:
 
 ```powershell
 docker compose up --build -d producer
+```
+
+The default Compose producer command replays 100,000 records. Do not start it
+until the bounded smoke test succeeds:
+
+```powershell
+docker compose up -d producer
 ```
 
 ## Validation completed
