@@ -1,0 +1,14 @@
+Metric,Value
+ML rows,897780.0
+Zones,52.0
+Prediction origins,17265.0
+Duplicate zone-time rows,0.0
+Missing values,0.0
+Zero last-5min demand rows (%),21.017
+Rain rows (%),5.004
+Event-impact rows (%),1.006
+Event-active rows (%),0.429
+Mean target next 15min,7.566
+Maximum target next 15min,94.0
+Minimum target next 15min,0.0
+Total event-impacted observations,9036.0

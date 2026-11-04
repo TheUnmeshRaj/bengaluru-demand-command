@@ -1,0 +1,18 @@
+{
+  "unique_prediction_timestamps": "17265",
+  "train_boundary": "2026-08-12 00:10:00",
+  "validation_boundary": "2026-08-21 00:00:00",
+  "purge_minutes": "15",
+  "train_rows": "628316",
+  "validation_rows": "134576",
+  "test_rows": "134680",
+  "train_start": "2026-07-01 01:05:00",
+  "train_end": "2026-08-11 23:55:00",
+  "validation_start": "2026-08-12 00:10:00",
+  "validation_end": "2026-08-20 23:45:00",
+  "test_start": "2026-08-21 00:00:00",
+  "test_end": "2026-08-29 23:45:00"
+}
+
+Split policy: chronological 70/15/15 by prediction timestamp.
+A 15-minute purge prevents target windows crossing split boundaries.

@@ -1,0 +1,481 @@
+Pickup_Location,Hour,Bookings
+BTM Layout,0,88
+BTM Layout,1,88
+BTM Layout,2,94
+BTM Layout,3,82
+BTM Layout,4,82
+BTM Layout,5,72
+BTM Layout,6,86
+BTM Layout,7,86
+BTM Layout,8,90
+BTM Layout,9,89
+BTM Layout,10,98
+BTM Layout,11,87
+BTM Layout,12,95
+BTM Layout,13,108
+BTM Layout,14,88
+BTM Layout,15,82
+BTM Layout,16,76
+BTM Layout,17,86
+BTM Layout,18,86
+BTM Layout,19,87
+BTM Layout,20,87
+BTM Layout,21,89
+BTM Layout,22,71
+BTM Layout,23,94
+Banashankari,0,95
+Banashankari,1,108
+Banashankari,2,80
+Banashankari,3,93
+Banashankari,4,91
+Banashankari,5,74
+Banashankari,6,77
+Banashankari,7,98
+Banashankari,8,100
+Banashankari,9,104
+Banashankari,10,103
+Banashankari,11,93
+Banashankari,12,98
+Banashankari,13,79
+Banashankari,14,98
+Banashankari,15,94
+Banashankari,16,90
+Banashankari,17,83
+Banashankari,18,110
+Banashankari,19,94
+Banashankari,20,80
+Banashankari,21,80
+Banashankari,22,83
+Banashankari,23,96
+Basavanagudi,0,90
+Basavanagudi,1,94
+Basavanagudi,2,80
+Basavanagudi,3,105
+Basavanagudi,4,86
+Basavanagudi,5,83
+Basavanagudi,6,90
+Basavanagudi,7,92
+Basavanagudi,8,90
+Basavanagudi,9,86
+Basavanagudi,10,86
+Basavanagudi,11,96
+Basavanagudi,12,87
+Basavanagudi,13,90
+Basavanagudi,14,73
+Basavanagudi,15,98
+Basavanagudi,16,89
+Basavanagudi,17,90
+Basavanagudi,18,78
+Basavanagudi,19,93
+Basavanagudi,20,87
+Basavanagudi,21,91
+Basavanagudi,22,87
+Basavanagudi,23,79
+Cox Town,0,84
+Cox Town,1,77
+Cox Town,2,81
+Cox Town,3,81
+Cox Town,4,92
+Cox Town,5,93
+Cox Town,6,97
+Cox Town,7,88
+Cox Town,8,88
+Cox Town,9,78
+Cox Town,10,92
+Cox Town,11,90
+Cox Town,12,82
+Cox Town,13,86
+Cox Town,14,90
+Cox Town,15,82
+Cox Town,16,81
+Cox Town,17,96
+Cox Town,18,86
+Cox Town,19,92
+Cox Town,20,83
+Cox Town,21,85
+Cox Town,22,100
+Cox Town,23,96
+Hennur,0,92
+Hennur,1,92
+Hennur,2,92
+Hennur,3,79
+Hennur,4,95
+Hennur,5,101
+Hennur,6,87
+Hennur,7,87
+Hennur,8,84
+Hennur,9,93
+Hennur,10,83
+Hennur,11,79
+Hennur,12,81
+Hennur,13,84
+Hennur,14,82
+Hennur,15,92
+Hennur,16,95
+Hennur,17,96
+Hennur,18,102
+Hennur,19,79
+Hennur,20,87
+Hennur,21,91
+Hennur,22,63
+Hennur,23,74
+Hosur Road,0,100
+Hosur Road,1,76
+Hosur Road,2,95
+Hosur Road,3,82
+Hosur Road,4,89
+Hosur Road,5,78
+Hosur Road,6,83
+Hosur Road,7,91
+Hosur Road,8,91
+Hosur Road,9,82
+Hosur Road,10,78
+Hosur Road,11,88
+Hosur Road,12,104
+Hosur Road,13,76
+Hosur Road,14,92
+Hosur Road,15,94
+Hosur Road,16,95
+Hosur Road,17,81
+Hosur Road,18,73
+Hosur Road,19,85
+Hosur Road,20,83
+Hosur Road,21,85
+Hosur Road,22,84
+Hosur Road,23,89
+Indiranagar,0,88
+Indiranagar,1,90
+Indiranagar,2,86
+Indiranagar,3,78
+Indiranagar,4,72
+Indiranagar,5,88
+Indiranagar,6,90
+Indiranagar,7,106
+Indiranagar,8,103
+Indiranagar,9,100
+Indiranagar,10,74
+Indiranagar,11,81
+Indiranagar,12,90
+Indiranagar,13,95
+Indiranagar,14,85
+Indiranagar,15,75
+Indiranagar,16,79
+Indiranagar,17,96
+Indiranagar,18,80
+Indiranagar,19,93
+Indiranagar,20,98
+Indiranagar,21,97
+Indiranagar,22,97
+Indiranagar,23,92
+Kammanahalli,0,97
+Kammanahalli,1,88
+Kammanahalli,2,94
+Kammanahalli,3,68
+Kammanahalli,4,91
+Kammanahalli,5,85
+Kammanahalli,6,92
+Kammanahalli,7,86
+Kammanahalli,8,97
+Kammanahalli,9,73
+Kammanahalli,10,68
+Kammanahalli,11,69
+Kammanahalli,12,80
+Kammanahalli,13,83
+Kammanahalli,14,78
+Kammanahalli,15,112
+Kammanahalli,16,93
+Kammanahalli,17,88
+Kammanahalli,18,75
+Kammanahalli,19,81
+Kammanahalli,20,94
+Kammanahalli,21,84
+Kammanahalli,22,98
+Kammanahalli,23,97
+Kengeri,0,81
+Kengeri,1,100
+Kengeri,2,81
+Kengeri,3,90
+Kengeri,4,85
+Kengeri,5,106
+Kengeri,6,98
+Kengeri,7,85
+Kengeri,8,95
+Kengeri,9,92
+Kengeri,10,80
+Kengeri,11,98
+Kengeri,12,66
+Kengeri,13,94
+Kengeri,14,94
+Kengeri,15,72
+Kengeri,16,89
+Kengeri,17,74
+Kengeri,18,74
+Kengeri,19,82
+Kengeri,20,77
+Kengeri,21,95
+Kengeri,22,89
+Kengeri,23,86
+Langford Town,0,78
+Langford Town,1,95
+Langford Town,2,88
+Langford Town,3,80
+Langford Town,4,81
+Langford Town,5,87
+Langford Town,6,74
+Langford Town,7,90
+Langford Town,8,77
+Langford Town,9,86
+Langford Town,10,108
+Langford Town,11,98
+Langford Town,12,80
+Langford Town,13,85
+Langford Town,14,80
+Langford Town,15,84
+Langford Town,16,92
+Langford Town,17,88
+Langford Town,18,87
+Langford Town,19,97
+Langford Town,20,85
+Langford Town,21,102
+Langford Town,22,81
+Langford Town,23,76
+Magadi Road,0,89
+Magadi Road,1,87
+Magadi Road,2,84
+Magadi Road,3,78
+Magadi Road,4,86
+Magadi Road,5,94
+Magadi Road,6,75
+Magadi Road,7,87
+Magadi Road,8,95
+Magadi Road,9,105
+Magadi Road,10,77
+Magadi Road,11,92
+Magadi Road,12,85
+Magadi Road,13,99
+Magadi Road,14,99
+Magadi Road,15,77
+Magadi Road,16,87
+Magadi Road,17,81
+Magadi Road,18,77
+Magadi Road,19,85
+Magadi Road,20,77
+Magadi Road,21,92
+Magadi Road,22,108
+Magadi Road,23,83
+Mysore Road,0,98
+Mysore Road,1,80
+Mysore Road,2,82
+Mysore Road,3,84
+Mysore Road,4,80
+Mysore Road,5,85
+Mysore Road,6,87
+Mysore Road,7,110
+Mysore Road,8,94
+Mysore Road,9,88
+Mysore Road,10,89
+Mysore Road,11,88
+Mysore Road,12,89
+Mysore Road,13,72
+Mysore Road,14,80
+Mysore Road,15,103
+Mysore Road,16,84
+Mysore Road,17,98
+Mysore Road,18,71
+Mysore Road,19,71
+Mysore Road,20,89
+Mysore Road,21,90
+Mysore Road,22,98
+Mysore Road,23,75
+Nagarbhavi,0,79
+Nagarbhavi,1,71
+Nagarbhavi,2,92
+Nagarbhavi,3,75
+Nagarbhavi,4,86
+Nagarbhavi,5,82
+Nagarbhavi,6,72
+Nagarbhavi,7,92
+Nagarbhavi,8,98
+Nagarbhavi,9,85
+Nagarbhavi,10,112
+Nagarbhavi,11,76
+Nagarbhavi,12,78
+Nagarbhavi,13,80
+Nagarbhavi,14,79
+Nagarbhavi,15,110
+Nagarbhavi,16,94
+Nagarbhavi,17,93
+Nagarbhavi,18,89
+Nagarbhavi,19,90
+Nagarbhavi,20,85
+Nagarbhavi,21,81
+Nagarbhavi,22,99
+Nagarbhavi,23,85
+RT Nagar,0,77
+RT Nagar,1,98
+RT Nagar,2,98
+RT Nagar,3,81
+RT Nagar,4,75
+RT Nagar,5,108
+RT Nagar,6,70
+RT Nagar,7,86
+RT Nagar,8,98
+RT Nagar,9,101
+RT Nagar,10,84
+RT Nagar,11,81
+RT Nagar,12,82
+RT Nagar,13,76
+RT Nagar,14,93
+RT Nagar,15,92
+RT Nagar,16,96
+RT Nagar,17,108
+RT Nagar,18,93
+RT Nagar,19,96
+RT Nagar,20,72
+RT Nagar,21,94
+RT Nagar,22,87
+RT Nagar,23,89
+Ramamurthy Nagar,0,95
+Ramamurthy Nagar,1,86
+Ramamurthy Nagar,2,105
+Ramamurthy Nagar,3,97
+Ramamurthy Nagar,4,99
+Ramamurthy Nagar,5,100
+Ramamurthy Nagar,6,82
+Ramamurthy Nagar,7,101
+Ramamurthy Nagar,8,81
+Ramamurthy Nagar,9,77
+Ramamurthy Nagar,10,88
+Ramamurthy Nagar,11,86
+Ramamurthy Nagar,12,100
+Ramamurthy Nagar,13,72
+Ramamurthy Nagar,14,89
+Ramamurthy Nagar,15,80
+Ramamurthy Nagar,16,80
+Ramamurthy Nagar,17,78
+Ramamurthy Nagar,18,80
+Ramamurthy Nagar,19,102
+Ramamurthy Nagar,20,70
+Ramamurthy Nagar,21,85
+Ramamurthy Nagar,22,95
+Ramamurthy Nagar,23,88
+Sahakar Nagar,0,94
+Sahakar Nagar,1,75
+Sahakar Nagar,2,66
+Sahakar Nagar,3,95
+Sahakar Nagar,4,76
+Sahakar Nagar,5,97
+Sahakar Nagar,6,100
+Sahakar Nagar,7,103
+Sahakar Nagar,8,88
+Sahakar Nagar,9,79
+Sahakar Nagar,10,79
+Sahakar Nagar,11,75
+Sahakar Nagar,12,96
+Sahakar Nagar,13,85
+Sahakar Nagar,14,79
+Sahakar Nagar,15,75
+Sahakar Nagar,16,84
+Sahakar Nagar,17,104
+Sahakar Nagar,18,90
+Sahakar Nagar,19,85
+Sahakar Nagar,20,111
+Sahakar Nagar,21,96
+Sahakar Nagar,22,93
+Sahakar Nagar,23,101
+Tumkur Road,0,81
+Tumkur Road,1,86
+Tumkur Road,2,87
+Tumkur Road,3,82
+Tumkur Road,4,103
+Tumkur Road,5,97
+Tumkur Road,6,86
+Tumkur Road,7,100
+Tumkur Road,8,83
+Tumkur Road,9,80
+Tumkur Road,10,84
+Tumkur Road,11,89
+Tumkur Road,12,97
+Tumkur Road,13,96
+Tumkur Road,14,76
+Tumkur Road,15,80
+Tumkur Road,16,96
+Tumkur Road,17,70
+Tumkur Road,18,94
+Tumkur Road,19,90
+Tumkur Road,20,89
+Tumkur Road,21,76
+Tumkur Road,22,94
+Tumkur Road,23,89
+Vijayanagar,0,78
+Vijayanagar,1,82
+Vijayanagar,2,80
+Vijayanagar,3,89
+Vijayanagar,4,86
+Vijayanagar,5,88
+Vijayanagar,6,103
+Vijayanagar,7,66
+Vijayanagar,8,106
+Vijayanagar,9,87
+Vijayanagar,10,82
+Vijayanagar,11,95
+Vijayanagar,12,90
+Vijayanagar,13,93
+Vijayanagar,14,94
+Vijayanagar,15,80
+Vijayanagar,16,84
+Vijayanagar,17,89
+Vijayanagar,18,87
+Vijayanagar,19,89
+Vijayanagar,20,97
+Vijayanagar,21,90
+Vijayanagar,22,100
+Vijayanagar,23,78
+Whitefield,0,111
+Whitefield,1,83
+Whitefield,2,89
+Whitefield,3,89
+Whitefield,4,78
+Whitefield,5,82
+Whitefield,6,83
+Whitefield,7,80
+Whitefield,8,80
+Whitefield,9,88
+Whitefield,10,99
+Whitefield,11,93
+Whitefield,12,94
+Whitefield,13,60
+Whitefield,14,83
+Whitefield,15,96
+Whitefield,16,104
+Whitefield,17,85
+Whitefield,18,88
+Whitefield,19,92
+Whitefield,20,80
+Whitefield,21,83
+Whitefield,22,97
+Whitefield,23,70
+Yeshwanthpur,0,95
+Yeshwanthpur,1,85
+Yeshwanthpur,2,86
+Yeshwanthpur,3,75
+Yeshwanthpur,4,116
+Yeshwanthpur,5,107
+Yeshwanthpur,6,76
+Yeshwanthpur,7,88
+Yeshwanthpur,8,74
+Yeshwanthpur,9,99
+Yeshwanthpur,10,88
+Yeshwanthpur,11,90
+Yeshwanthpur,12,105
+Yeshwanthpur,13,94
+Yeshwanthpur,14,90
+Yeshwanthpur,15,84
+Yeshwanthpur,16,69
+Yeshwanthpur,17,85
+Yeshwanthpur,18,83
+Yeshwanthpur,19,94
+Yeshwanthpur,20,82
+Yeshwanthpur,21,100
+Yeshwanthpur,22,89
+Yeshwanthpur,23,85

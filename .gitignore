@@ -1,0 +1,57 @@
+# Node / Next.js
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Logs and runtime output
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Notebooks and local tooling
+.ipynb_checkpoints/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# OS metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local model outputs
+*.joblib
+*.pkl
+*.pickle
+
+# Large source datasets
+# Keep the compact dashboard payload in public/data/ tracked instead.
+Bookings_data.xlsx
+synthetic_bengaluru_rides.csv
+rides_contextual_synthetic.csv
+zone_demand_5min.csv
+
+# Temporary exports and caches
+*.tmp
+*.temp
+*.bak

@@ -1,0 +1,4 @@
+Window,Mean_Bookings,Median_Bookings,Minimum_Bookings,Maximum_Bookings,Zero_Windows,Total_Windows
+5min,11.539426523297491,11.0,1,26,0,8928
+15min,34.61827956989247,34.0,14,57,0,2976
+30min,69.23655913978494,69.0,41,99,0,1488

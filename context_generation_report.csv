@@ -1,0 +1,8 @@
+Metric,Value
+Original ride rows,2257507
+Added synthetic event-related ride rows,7983
+Contextual ride rows,2265490
+Added row percentage,0.354
+Event count,36
+Weather hours,see weather_data.csv
+Rain demand multiplier in original generator,1.3

@@ -1,0 +1,37 @@
+Event_ID,Event_Name,Event_Type,Venue_Zone_ID,Venue_Zone,Impact_Zone_IDs,Start_Time,End_Time,Event_Intensity,Is_Synthetic,Source_Description
+EV018,Simulated Sports Event 18,Sports,Z35,Church Street,Z35|Z32|Z33,2026-07-01 17:00:00,2026-07-01 21:00:00,2,True,Simulated event scenario; not a historical event claim
+EV021,Simulated Sports Event 21,Sports,Z02,Electronic City,Z02|Z50|Z04,2026-07-01 18:00:00,2026-07-01 21:00:00,3,True,Simulated event scenario; not a historical event claim
+EV009,Simulated Exhibition 09,Exhibition,Z46,KIAL Airport,Z46|Z48|Z47,2026-07-03 11:00:00,2026-07-03 14:00:00,1,True,Simulated event scenario; not a historical event claim
+EV015,Simulated Festival 15,Festival,Z38,Majestic (KBS),Z38|Z41|Z42,2026-07-05 11:00:00,2026-07-05 14:00:00,1,True,Simulated event scenario; not a historical event claim
+EV010,Simulated Exhibition 10,Exhibition,Z38,Majestic (KBS),Z38|Z41|Z42,2026-07-08 11:00:00,2026-07-08 13:00:00,2,True,Simulated event scenario; not a historical event claim
+EV004,Simulated Festival 04,Festival,Z31,Koramangala,Z31|Z12|Z13,2026-07-09 15:00:00,2026-07-09 18:00:00,3,True,Simulated event scenario; not a historical event claim
+EV035,Simulated Festival 35,Festival,Z31,Koramangala,Z31|Z12|Z13,2026-07-13 14:00:00,2026-07-13 16:00:00,3,True,Simulated event scenario; not a historical event claim
+EV016,Simulated Exhibition 16,Exhibition,Z03,Manyata Tech Park,Z03|Z47|Z29,2026-07-18 13:00:00,2026-07-18 15:00:00,1,True,Simulated event scenario; not a historical event claim
+EV012,Simulated Sports Event 12,Sports,Z32,MG Road,Z32|Z33|Z35,2026-07-21 20:00:00,2026-07-21 23:00:00,1,True,Simulated event scenario; not a historical event claim
+EV031,Simulated Festival 31,Festival,Z35,Church Street,Z35|Z32|Z33,2026-07-22 14:00:00,2026-07-22 16:00:00,3,True,Simulated event scenario; not a historical event claim
+EV003,Simulated Exhibition 03,Exhibition,Z38,Majestic (KBS),Z38|Z41|Z42,2026-07-23 12:00:00,2026-07-23 14:00:00,2,True,Simulated event scenario; not a historical event claim
+EV007,Simulated Sports Event 07,Sports,Z41,KSR Bengaluru,Z41|Z38|Z42,2026-07-24 19:00:00,2026-07-24 22:00:00,2,True,Simulated event scenario; not a historical event claim
+EV001,Simulated Festival 01,Festival,Z35,Church Street,Z35|Z32|Z33,2026-07-25 10:00:00,2026-07-25 13:00:00,1,True,Simulated event scenario; not a historical event claim
+EV006,Simulated Concert 06,Concert,Z01,Whitefield,Z01|Z05|Z06,2026-07-26 18:00:00,2026-07-26 21:00:00,3,True,Simulated event scenario; not a historical event claim
+EV013,Simulated Concert 13,Concert,Z33,Brigade Road,Z33|Z32|Z35,2026-07-26 18:00:00,2026-07-26 21:00:00,1,True,Simulated event scenario; not a historical event claim
+EV017,Simulated Concert 17,Concert,Z03,Manyata Tech Park,Z03|Z47|Z29,2026-07-26 19:00:00,2026-07-26 22:00:00,3,True,Simulated event scenario; not a historical event claim
+EV002,Simulated Concert 02,Concert,Z41,KSR Bengaluru,Z41|Z38|Z42,2026-07-28 19:00:00,2026-07-28 23:00:00,1,True,Simulated event scenario; not a historical event claim
+EV023,Simulated Exhibition 23,Exhibition,Z35,Church Street,Z35|Z32|Z33,2026-07-30 12:00:00,2026-07-30 14:00:00,3,True,Simulated event scenario; not a historical event claim
+EV027,Simulated Concert 27,Concert,Z46,KIAL Airport,Z46|Z48|Z47,2026-07-30 20:00:00,2026-07-31 00:00:00,1,True,Simulated event scenario; not a historical event claim
+EV022,Simulated Festival 22,Festival,Z38,Majestic (KBS),Z38|Z41|Z42,2026-08-03 14:00:00,2026-08-03 18:00:00,3,True,Simulated event scenario; not a historical event claim
+EV019,Simulated Concert 19,Concert,Z41,KSR Bengaluru,Z41|Z38|Z42,2026-08-04 19:00:00,2026-08-04 23:00:00,2,True,Simulated event scenario; not a historical event claim
+EV014,Simulated Sports Event 14,Sports,Z35,Church Street,Z35|Z32|Z33,2026-08-05 19:00:00,2026-08-05 21:00:00,3,True,Simulated event scenario; not a historical event claim
+EV026,Simulated Festival 26,Festival,Z31,Koramangala,Z31|Z12|Z13,2026-08-07 10:00:00,2026-08-07 13:00:00,3,True,Simulated event scenario; not a historical event claim
+EV025,Simulated Festival 25,Festival,Z32,MG Road,Z32|Z33|Z35,2026-08-09 12:00:00,2026-08-09 16:00:00,3,True,Simulated event scenario; not a historical event claim
+EV032,Simulated Exhibition 32,Exhibition,Z03,Manyata Tech Park,Z03|Z47|Z29,2026-08-10 14:00:00,2026-08-10 16:00:00,2,True,Simulated event scenario; not a historical event claim
+EV029,Simulated Festival 29,Festival,Z32,MG Road,Z32|Z33|Z35,2026-08-11 15:00:00,2026-08-11 19:00:00,2,True,Simulated event scenario; not a historical event claim
+EV011,Simulated Exhibition 11,Exhibition,Z30,Indiranagar,Z30|Z32|Z33,2026-08-12 14:00:00,2026-08-12 17:00:00,1,True,Simulated event scenario; not a historical event claim
+EV033,Simulated Festival 33,Festival,Z32,MG Road,Z32|Z33|Z35,2026-08-15 15:00:00,2026-08-15 18:00:00,2,True,Simulated event scenario; not a historical event claim
+EV005,Simulated Sports Event 05,Sports,Z30,Indiranagar,Z30|Z32|Z33,2026-08-16 18:00:00,2026-08-16 22:00:00,2,True,Simulated event scenario; not a historical event claim
+EV028,Simulated Festival 28,Festival,Z46,KIAL Airport,Z46|Z48|Z47,2026-08-19 12:00:00,2026-08-19 15:00:00,3,True,Simulated event scenario; not a historical event claim
+EV020,Simulated Exhibition 20,Exhibition,Z02,Electronic City,Z02|Z50|Z04,2026-08-21 13:00:00,2026-08-21 15:00:00,1,True,Simulated event scenario; not a historical event claim
+EV024,Simulated Festival 24,Festival,Z38,Majestic (KBS),Z38|Z41|Z42,2026-08-25 10:00:00,2026-08-25 14:00:00,1,True,Simulated event scenario; not a historical event claim
+EV030,Simulated Sports Event 30,Sports,Z30,Indiranagar,Z30|Z32|Z33,2026-08-25 20:00:00,2026-08-25 22:00:00,2,True,Simulated event scenario; not a historical event claim
+EV036,Simulated Exhibition 36,Exhibition,Z38,Majestic (KBS),Z38|Z41|Z42,2026-08-26 16:00:00,2026-08-26 19:00:00,2,True,Simulated event scenario; not a historical event claim
+EV034,Simulated Exhibition 34,Exhibition,Z38,Majestic (KBS),Z38|Z41|Z42,2026-08-28 15:00:00,2026-08-28 17:00:00,2,True,Simulated event scenario; not a historical event claim
+EV008,Simulated Exhibition 08,Exhibition,Z46,KIAL Airport,Z46|Z48|Z47,2026-08-29 14:00:00,2026-08-29 18:00:00,3,True,Simulated event scenario; not a historical event claim

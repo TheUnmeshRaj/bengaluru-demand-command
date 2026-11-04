@@ -1,0 +1,16 @@
+Column,Data_Type,Missing_Count,Unique_Count
+Request_ID,object,0,2257507
+Timestamp,object,0,1800278
+Date,object,0,60
+Time,object,0,86400
+Hour,int64,0,24
+Day_of_Week,int64,0,7
+Pickup_Zone_ID,object,0,52
+Pickup_Zone,object,0,52
+Drop_Zone_ID,object,0,52
+Drop_Zone,object,0,52
+Vehicle_Type,object,0,4
+Ride_Distance_KM,float64,0,441
+Weather,object,0,2
+Rain_Intensity,float64,0,73
+Event_Flag,float64,2257507,0
