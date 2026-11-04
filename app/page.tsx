@@ -85,6 +85,23 @@ export default function Home() {
   const [streamStatus, setStreamStatus] = useState("offline");
   const [context, setContext] = useState<ContextData | null>(null);
   const [liveState, setLiveState] = useState<LiveState | null>(null);
+  const [liveClock, setLiveClock] = useState("");
+
+  useEffect(() => {
+    const updateClock = () => setLiveClock(new Intl.DateTimeFormat("en-IN", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    }).format(new Date()));
+    updateClock();
+    const clockTimer = window.setInterval(updateClock, 1000);
+    return () => window.clearInterval(clockTimer);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -162,7 +179,7 @@ export default function Home() {
       <section className="content">
         <header className="topbar"><div><p className="eyebrow">BENGALURU / OPERATIONS</p><h1>{activeNav === "Overview" ? "Demand command center" : activeNav}</h1></div><div className="top-actions"><span className="updated"><span className={`status-dot ${streamStatus === "connected" ? "" : "offline-dot"}`} />{streamStatus === "connected" ? "Kafka live" : "Kafka offline"}</span></div></header>
 
-        <div className="hero-strip"><div><span className="live-pill">● LIVE FORECAST</span><h2>Where should drivers move next?</h2><p>Zone-level demand predicted for the next 15 minutes, refreshed from the streaming pipeline.</p></div><div className="hero-time"><span>LAST WINDOW</span><strong>{data.latestTimestamp.replace("2026-", "").replace(" ", " · ")}</strong><small>Asia/Kolkata · 5 min window</small></div></div>
+        <div className="hero-strip"><div><span className="live-pill">● LIVE FORECAST</span><h2>Where should drivers move next?</h2><p>Zone-level demand predicted for the next 15 minutes, refreshed from the streaming pipeline.</p></div><div className="hero-time"><span>LIVE NOW</span><strong>{liveClock || "—"}</strong><small>Asia/Kolkata · Last window: {data.latestTimestamp.replace("2026-", "").replace(" ", " · ")}</small></div></div>
         <section className="driver-mobile-card"><span className="section-kicker">DRIVER VIEW</span><h2>Go to {rankedZones[0]?.name}</h2><p>High demand expected in the next 15 minutes.</p><div className="driver-mobile-actions"><button onClick={() => setActiveNav("Live map")}>Show hotspot</button><button className="secondary-action" onClick={() => setSelectedZone(rankedZones[0]?.id ?? "Z30")}>Use this zone</button></div></section>
 
         <div className="stat-grid">
