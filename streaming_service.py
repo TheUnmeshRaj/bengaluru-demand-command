@@ -61,6 +61,7 @@ state: dict[str, Any] = {
     "consumed": 0,
     "published": 0,
     "errors": 0,
+    "logs": deque(maxlen=30),
     "zones": {},
 }
 
@@ -189,6 +190,11 @@ def publish_predictions(
     with state_lock:
         state["published"] += len(rows)
         state["lastWindow"] = timestamp.strftime("%Y-%m-%d %H:%M:%S")
+        state["logs"].appendleft({
+            "time": datetime.now(IST).strftime("%H:%M:%S"),
+            "level": "PRED",
+            "message": f"Forecast published · horizon=15m · {len(rows)} zones",
+        })
 
 
 def consume_loop() -> None:
@@ -211,6 +217,12 @@ def consume_loop() -> None:
     active_window: datetime | None = None
     consumer.subscribe([INPUT_TOPIC])
     logger.info("Connected to Kafka at %s; consuming %s", BROKER, INPUT_TOPIC)
+    with state_lock:
+        state["logs"].appendleft({
+            "time": datetime.now(IST).strftime("%H:%M:%S"),
+            "level": "INFO",
+            "message": f"Consumer subscribed to {INPUT_TOPIC}",
+        })
     try:
         while True:
             message = consumer.poll(1.0)
@@ -223,6 +235,12 @@ def consume_loop() -> None:
             event = json.loads(message.value().decode("utf-8"))
             with state_lock:
                 state["status"] = "connected"
+                if state["consumed"] % 1000 == 0:
+                    state["logs"].appendleft({
+                        "time": datetime.now(IST).strftime("%H:%M:%S"),
+                        "level": "INFO",
+                        "message": f"Consumed {state['consumed']:,} ride events",
+                    })
             timestamp = parse_event_time(event.get("event_time"))
             current_window = window_start(timestamp)
             if active_window is None:
@@ -258,7 +276,7 @@ def health() -> dict[str, Any]:
 @app.get("/state")
 def dashboard_state() -> dict[str, Any]:
     with state_lock:
-        return {**state, "zones": list(state["zones"].values())}
+        return {**state, "zones": list(state["zones"].values()), "logs": list(state["logs"])}
 
 
 if __name__ == "__main__":
