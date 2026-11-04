@@ -1,0 +1,6 @@
+FROM python:3.12-slim
+WORKDIR /app
+COPY requirements-producer.txt .
+RUN pip install --no-cache-dir -r requirements-producer.txt
+COPY kafka_ride_producer.py .
+CMD ["python", "kafka_ride_producer.py", "--limit", "100000", "--speedup", "3600", "--max-sleep", "0.02"]

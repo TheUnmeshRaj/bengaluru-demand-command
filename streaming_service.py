@@ -22,8 +22,6 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-import joblib
-import pandas as pd
 from confluent_kafka import Consumer, KafkaError, KafkaException, Producer
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -33,7 +31,6 @@ BROKER = os.getenv("KAFKA_BROKER", "localhost:9092")
 INPUT_TOPIC = os.getenv("KAFKA_INPUT_TOPIC", "ride_requests")
 OUTPUT_TOPIC = os.getenv("KAFKA_OUTPUT_TOPIC", "predictions")
 GROUP_ID = os.getenv("KAFKA_GROUP_ID", "bengaluru-demand-predictor")
-MODEL_PATH = ROOT / "ml_results" / "models" / "XGBoost_contextual.joblib"
 ZONE_DATA_PATH = ROOT / "public" / "data" / "dashboard.json"
 IST = timezone(timedelta(hours=5, minutes=30))
 
@@ -56,6 +53,7 @@ state: dict[str, Any] = {
     "outputTopic": OUTPUT_TOPIC,
     "window": "5 minutes",
     "horizon": "15 minutes",
+    "predictor": "Persistence_baseline",
     "delivery": "acks=all, idempotence enabled",
     "lastWindow": None,
     "consumed": 0,
@@ -138,7 +136,6 @@ def feature_row(
 
 
 def publish_predictions(
-    model: Any,
     producer: Producer,
     counts: dict[str, int],
     histories: dict[str, deque[float]],
@@ -146,44 +143,43 @@ def publish_predictions(
     timestamp: datetime,
 ) -> None:
     zone_ids = sorted(set(ZONE_NAMES) | set(counts))
-    rows = [
-        feature_row(zone_id, timestamp, counts.get(zone_id, 0), histories[zone_id], contexts.get(zone_id, {}))
-        for zone_id in zone_ids
-    ]
-    predictions = model.predict(pd.DataFrame(rows))
-    for row, prediction in zip(rows, predictions):
-        value = max(0.0, float(prediction))
+    for zone_id in zone_ids:
+        count = counts.get(zone_id, 0)
+        history = list(histories[zone_id]) + [float(count)]
+        recent = history[-3:]
+        value = max(0.0, 3.0 * (sum(recent) / len(recent)))
+        context = contexts.get(zone_id, {})
         event = {
             "schema_version": 1,
             "prediction_time": timestamp.isoformat(),
             "prediction_horizon_minutes": 15,
-            "zone_id": row["Zone_ID"],
-            "zone": ZONE_NAMES.get(row["Zone_ID"], row["Zone_ID"]),
+            "zone_id": zone_id,
+            "zone": ZONE_NAMES.get(zone_id, zone_id),
             "predicted_demand": round(value, 2),
-            "demand_last_5min": row["Demand_Last_5min"],
-            "model": "XGBoost_contextual",
+            "demand_last_5min": count,
+            "model": "Persistence_baseline",
         }
         producer.produce(
             OUTPUT_TOPIC,
-            key=row["Zone_ID"].encode(),
+            key=zone_id.encode(),
             value=json.dumps(event).encode(),
         )
         with state_lock:
-            state["zones"][row["Zone_ID"]] = {
-                "id": row["Zone_ID"],
+            state["zones"][zone_id] = {
+                "id": zone_id,
                 "name": event["zone"],
                 "average15": value,
                 "total": value,
                 "rows": 1,
                 "latest": {
                     "timestamp": timestamp.strftime("%Y-%m-%d %H:%M:%S"),
-                    "demandLast5": row["Demand_Last_5min"],
+                    "demandLast5": count,
                     "prediction15": value,
-                    "hour": row["Hour"],
-                    "weather": row["Weather_Condition"],
-                    "rain": row["Rain_Intensity"],
-                    "event": bool(row["Event_Active"]),
-                    "eventType": row["Event_Type"],
+                    "hour": timestamp.hour,
+                    "weather": context.get("weather") or "Clear",
+                    "rain": safe_float(context.get("rain_intensity")),
+                    "event": bool(context.get("event_flag")),
+                    "eventType": context.get("event_type") or "No event",
                 },
             }
     producer.flush(10)
@@ -210,7 +206,6 @@ def consume_loop() -> None:
         "acks": "all",
         "client.id": "bengaluru-demand-predictor",
     })
-    model = joblib.load(MODEL_PATH)
     counts: dict[str, int] = defaultdict(int)
     histories: dict[str, deque[float]] = defaultdict(lambda: deque(maxlen=12))
     contexts: dict[str, dict[str, Any]] = {}
@@ -246,7 +241,7 @@ def consume_loop() -> None:
             if active_window is None:
                 active_window = current_window
             if current_window != active_window:
-                publish_predictions(model, producer, counts, histories, contexts, active_window)
+                publish_predictions(producer, counts, histories, contexts, active_window)
                 for zone_id in set(ZONE_NAMES) | set(counts):
                     histories[zone_id].append(float(counts.get(zone_id, 0)))
                 counts = defaultdict(int)

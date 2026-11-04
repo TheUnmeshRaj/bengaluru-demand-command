@@ -46,9 +46,8 @@ services:
   producer:
     build:
       context: .
-      dockerfile: Dockerfile.streaming
+      dockerfile: Dockerfile.producer
     container_name: bengaluru-demand-producer
-    command: ["python", "kafka_ride_producer.py", "--limit", "100000", "--speedup", "3600", "--max-sleep", "0.02"]
     environment:
       KAFKA_BROKER: kafka:9092
       KAFKA_INPUT_TOPIC: ride_requests

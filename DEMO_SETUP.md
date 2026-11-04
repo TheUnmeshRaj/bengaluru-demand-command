@@ -8,7 +8,7 @@ The project now has a Docker Compose demo with these services:
 2. **Streaming service** on `localhost:8000`
    - Consumes the `ride_requests` topic
    - Closes five-minute zone windows
-   - Loads `ml_results/models/XGBoost_contextual.joblib`
+   - Uses the project-defined persistence baseline in the live lightweight container
    - Predicts `Target_Next_15min`
    - Publishes predictions to the `predictions` topic
    - Exposes live state at `/state`
@@ -76,11 +76,8 @@ docker compose down
 
 ## Important note
 
-The Kafka streaming path requires the trained model file at:
-
-```text
-ml_results/models/XGBoost_contextual.joblib
-```
-
+The live Docker demo uses the project-defined persistence baseline to stay
+lightweight: `3 × rolling 15-minute mean`. The trained contextual model files
+remain in `ml_results/models/` for the offline training and evaluation path.
 The large source datasets are mounted only where needed and are excluded from
 the web image. No Git LFS configuration is used.
