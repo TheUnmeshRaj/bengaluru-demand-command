@@ -1,0 +1,2 @@
+Comparison,Test_Rows,Max_Absolute_Prediction_Difference,Mean_Absolute_Prediction_Difference,Rows_Difference_Above_1e-5,Max_Actual_Target_Difference
+Kafka XGBoost vs saved offline XGBoost,134680,1.9030761748695113e-06,1.2224201074392477e-07,0,0.0

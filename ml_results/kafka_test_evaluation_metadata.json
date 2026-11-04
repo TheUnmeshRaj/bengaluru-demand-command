@@ -1,0 +1,24 @@
+{
+  "total_kafka_records": 897936,
+  "matched_test_records": 134680,
+  "expected_test_records": 134680,
+  "invalid_records": 0,
+  "forecast_horizon_counts": {
+    "15": 897936
+  },
+  "prediction_run_ids": [
+    "d2296bd6ad0c"
+  ],
+  "evaluation_consumer_group": "kafka-prediction-evaluation-29c78d616c",
+  "evaluation_basis": "Exact chronological test split from train_model.py",
+  "test_rows": 134680,
+  "test_start": "2026-08-21 00:00:00",
+  "test_end": "2026-08-29 23:45:00",
+  "prediction_horizon_minutes": 15,
+  "metrics_use": "Unrounded Kafka prediction field predicted_demand_15min",
+  "files": {
+    "aligned_predictions": "ml_results\\kafka_test_predictions_aligned.csv",
+    "metrics": "ml_results\\kafka_test_evaluation_metrics.csv",
+    "offline_comparison": "ml_results\\kafka_vs_offline_comparison.csv"
+  }
+}

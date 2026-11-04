@@ -3,7 +3,6 @@ import csv
 import json
 import time
 import argparse
-import os
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
 
@@ -14,11 +13,10 @@ from confluent_kafka import Producer
 # CONFIGURATION
 # ==================================================
 
-KAFKA_SERVER = os.getenv("KAFKA_BROKER", "localhost:9092")
-TOPIC_NAME = os.getenv("KAFKA_INPUT_TOPIC", "ride_requests")
-LOG_TOPIC = os.getenv("KAFKA_LOG_TOPIC", "pipeline_logs")
+KAFKA_SERVER = "127.0.0.1:9092"
+TOPIC_NAME = "ride_requests"
 
-DATASET_PATH = Path(os.getenv("RIDE_DATASET_PATH", "rides_contextual_synthetic.csv"))
+DATASET_PATH = Path("rides_contextual_synthetic.csv")
 
 INDIA_TIMEZONE = timezone(timedelta(hours=5, minutes=30))
 
@@ -93,19 +91,6 @@ producer = Producer({
     "compression.type": "snappy",
     "linger.ms": 10
 })
-
-
-def publish_pipeline_log(level, message):
-    producer.produce(
-        topic=LOG_TOPIC,
-        key=b"producer",
-        value=json.dumps({
-            "service": "producer",
-            "level": level,
-            "message": message,
-        }).encode("utf-8"),
-    )
-    producer.poll(0)
 
 
 # ==================================================
@@ -189,7 +174,6 @@ def publish_rides(limit, speedup, max_sleep):
     print(f"Topic: {TOPIC_NAME}")
     print(f"Record limit: {limit}")
     print(f"Replay speed: {speedup}x")
-    publish_pipeline_log("INFO", f"Producer started · topic={TOPIC_NAME} · limit={limit:,}")
 
     processed = 0
     previous_timestamp = None
@@ -290,7 +274,6 @@ def publish_rides(limit, speedup, max_sleep):
                 print(
                     f"Processed {processed:,} ride events"
                 )
-                publish_pipeline_log("INFO", f"Producer delivered {processed:,} ride events")
 
     print("\nWaiting for Kafka acknowledgements...")
 
@@ -304,8 +287,6 @@ def publish_rides(limit, speedup, max_sleep):
     print(f"Successfully sent : {stats['delivered']:,}")
     print(f"Failed messages   : {stats['failed']:,}")
     print(f"Pending messages  : {remaining:,}")
-    publish_pipeline_log("INFO", f"Producer finished · delivered={stats['delivered']:,} · failed={stats['failed']:,}")
-    producer.flush(10)
 
     print("================================")
 
