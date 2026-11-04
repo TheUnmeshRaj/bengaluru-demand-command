@@ -30,9 +30,20 @@ type DashboardData = {
   pipeline: { broker: string; inputTopic: string; window: string; horizon: string; delivery: string };
 };
 
+type LiveState = {
+  status: string;
+  lastWindow: string | null;
+  consumed: number;
+  published: number;
+  zones: Zone[];
+  broker: string;
+  inputTopic: string;
+  outputTopic: string;
+};
+
 const formatNumber = (value: number) => new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(value);
 
-function WorkspacePage({ page, data, rankedZones, selectedZone, onSelect, live, onToggleLive }: {
+function WorkspacePage({ page, data, rankedZones, selectedZone, onSelect, live, onToggleLive, streamStatus }: {
   page: string;
   data: DashboardData;
   rankedZones: Zone[];
@@ -40,6 +51,7 @@ function WorkspacePage({ page, data, rankedZones, selectedZone, onSelect, live, 
   onSelect: (id: string) => void;
   live: boolean;
   onToggleLive: () => void;
+  streamStatus: string;
 }) {
   if (page === "Live map") {
     return <section className="workspace-page"><section className="panel map-panel map-page-panel"><div className="panel-header"><div><span className="section-kicker">LIVE MAP / 52 ZONES</span><h3>Move drivers toward the strongest forecast</h3></div><div className="legend"><span><i className="legend-dot low" />Low</span><span><i className="legend-dot mid" />Rising</span><span><i className="legend-dot high" />Hot</span></div></div><DemandMap zones={rankedZones} coordinatesUrl="/data/zone-coordinates.json" selectedZone={selectedZone} onSelect={onSelect} /></section><section className="panel map-side-panel"><span className="section-kicker">SELECTED ZONE</span><h3>{data.zones.find((zone) => zone.id === selectedZone)?.name ?? "Select a zone"}</h3><p className="page-muted">Click any hotspot on the map to see a driver briefing for the next 15 minutes.</p>{rankedZones.slice(0, 8).map((zone, index) => <button key={zone.id} className={zone.id === selectedZone ? "rank-row selected" : "rank-row"} onClick={() => onSelect(zone.id)}><span className="rank">{String(index + 1).padStart(2, "0")}</span><span className="rank-name">{zone.name}<small>{zone.id} · {zone.latest.weather}</small></span><span className="rank-value">{formatNumber(zone.latest.prediction15)}</span></button>)}</section></section>;
@@ -47,7 +59,7 @@ function WorkspacePage({ page, data, rankedZones, selectedZone, onSelect, live, 
   if (page === "Predictions") {
     return <section className="workspace-page"><section className="panel table-panel"><div className="panel-header"><div><span className="section-kicker">FORECAST REGISTER</span><h3>Next 15-minute demand by zone</h3></div><span className="refresh">Updated every 5 min</span></div><div className="prediction-table"><div className="table-row table-head"><span>RANK / ZONE</span><span>LAST 5 MIN</span><span>NEXT 15 MIN</span><span>CHANGE</span><span>CONTEXT</span></div>{rankedZones.map((zone, index) => { const change = zone.latest.prediction15 - zone.latest.demandLast5; return <div className="table-row" key={zone.id}><span className="table-zone"><b>{String(index + 1).padStart(2, "0")}</b><strong>{zone.name}</strong><small>{zone.id}</small></span><span>{formatNumber(zone.latest.demandLast5)}</span><span className="table-prediction">{formatNumber(zone.latest.prediction15)}</span><span className={change >= 0 ? "change-up" : "change-down"}>{change >= 0 ? "▲" : "▼"} {formatNumber(Math.abs(change))}</span><span className="context-tag">{zone.latest.event ? zone.latest.eventType : zone.latest.weather}</span></div>; })}</div></section><section className="panel metrics-panel"><span className="section-kicker">MODEL VALIDATION</span><h3>Test split metrics</h3><p className="page-muted">Reported from the existing contextual and historical model runs.</p>{data.metrics.filter((metric) => metric.Split === "test").map((metric) => <div className="metric-row" key={metric.Model}><span>{metric.Model.replace("_", " ")}</span><strong>{Number(metric.WAPE_percent).toFixed(1)}% <small>WAPE</small></strong></div>)}</section></section>;
   }
-  return <section className="workspace-page"><section className="panel kafka-page-panel"><div className="panel-header"><div><span className="section-kicker">STREAMING OPERATIONS</span><h3>Kafka pipeline health</h3></div><span className="connected"><span className="status-dot" />{live ? "Connected" : "Paused"}</span></div><div className="pipeline-large"><div><b>01</b><strong>Ride replay producer</strong><small>{data.pipeline.inputTopic} · {data.pipeline.broker}</small></div><i>→</i><div><b>02</b><strong>5-minute aggregation</strong><small>Zone-level window close</small></div><i>→</i><div><b>03</b><strong>15-minute prediction</strong><small>Contextual model output</small></div><i>→</i><div><b>04</b><strong>Prediction storage</strong><small>Dashboard-ready records</small></div></div><div className="kafka-counters"><div><span>CONSUMER LAG</span><strong>0</strong><small>events behind</small></div><div><span>WINDOW</span><strong>5 min</strong><small>aggregation interval</small></div><div><span>HORIZON</span><strong>15 min</strong><small>forecast target</small></div><div><span>DELIVERY</span><strong>acks=all</strong><small>idempotence enabled</small></div></div><div className="log-window large-log"><div><time>19:32:04</time><span className="log-ok">INFO</span><p>Consumed 1,248 ride events from ride_requests</p></div><div><time>19:32:05</time><span className="log-ok">INFO</span><p>Window closed · 52 zones aggregated · no late records</p></div><div><time>19:32:05</time><span className="log-blue">PRED</span><p>Forecast published · horizon=15m · 52 predictions</p></div><div><time>19:32:06</time><span className="log-ok">INFO</span><p>Predictions committed to storage · offset=884201</p></div></div><button className="stream-button" onClick={onToggleLive}>{live ? "Pause demo stream" : "Resume demo stream"}</button></section></section>;
+  return <section className="workspace-page"><section className="panel kafka-page-panel"><div className="panel-header"><div><span className="section-kicker">STREAMING OPERATIONS</span><h3>Kafka pipeline health</h3></div><span className="connected"><span className={`status-dot ${streamStatus === "connected" ? "" : "offline-dot"}`} />{streamStatus === "connected" && live ? "Connected" : streamStatus === "connected" ? "Paused" : "Offline"}</span></div><div className="pipeline-large"><div><b>01</b><strong>Ride replay producer</strong><small>{data.pipeline.inputTopic} · {data.pipeline.broker}</small></div><i>→</i><div><b>02</b><strong>5-minute aggregation</strong><small>Zone-level window close</small></div><i>→</i><div><b>03</b><strong>15-minute prediction</strong><small>Contextual model output</small></div><i>→</i><div><b>04</b><strong>Prediction storage</strong><small>Dashboard-ready records</small></div></div><div className="kafka-counters"><div><span>CONSUMER LAG</span><strong>0</strong><small>events behind</small></div><div><span>WINDOW</span><strong>5 min</strong><small>aggregation interval</small></div><div><span>HORIZON</span><strong>15 min</strong><small>forecast target</small></div><div><span>DELIVERY</span><strong>acks=all</strong><small>idempotence enabled</small></div></div><div className="log-window large-log"><div><time>19:32:04</time><span className="log-ok">INFO</span><p>Consumed 1,248 ride events from ride_requests</p></div><div><time>19:32:05</time><span className="log-ok">INFO</span><p>Window closed · 52 zones aggregated · no late records</p></div><div><time>19:32:05</time><span className="log-blue">PRED</span><p>Forecast published · horizon=15m · 52 predictions</p></div><div><time>19:32:06</time><span className="log-ok">INFO</span><p>Predictions committed to storage · offset=884201</p></div></div><button className="stream-button" onClick={onToggleLive}>{live ? "Pause demo stream" : "Resume demo stream"}</button></section></section>;
 }
 
 export default function Home() {
@@ -55,9 +67,49 @@ export default function Home() {
   const [selectedZone, setSelectedZone] = useState<string>("Z30");
   const [activeNav, setActiveNav] = useState("Overview");
   const [live, setLive] = useState(true);
+  const [streamStatus, setStreamStatus] = useState("demo fallback");
 
   useEffect(() => {
-    fetch("/data/dashboard.json").then((response) => response.json()).then(setData);
+    let active = true;
+    fetch("/data/dashboard.json")
+      .then((response) => response.json())
+      .then((baseline: DashboardData) => {
+        if (active) setData(baseline);
+        return fetch("http://127.0.0.1:8000/state");
+      })
+      .then((response) => {
+        if (!response.ok) throw new Error(`Streaming API returned ${response.status}`);
+        return response.json() as Promise<LiveState>;
+      })
+      .then((liveState) => {
+        if (!active) return;
+        setStreamStatus(liveState.status);
+        if (liveState.status === "connected" && liveState.zones.length > 0) {
+          setData((current) => current ? {
+            ...current,
+            latestTimestamp: liveState.lastWindow ?? current.latestTimestamp,
+            zones: liveState.zones,
+            pipeline: { ...current.pipeline, broker: liveState.broker, inputTopic: liveState.inputTopic },
+          } : current);
+        }
+      })
+      .catch(() => {
+        if (active) setStreamStatus("demo fallback");
+      });
+    const timer = window.setInterval(() => {
+      fetch("http://127.0.0.1:8000/state")
+        .then((response) => response.ok ? response.json() as Promise<LiveState> : Promise.reject(new Error("stream unavailable")))
+        .then((liveState) => {
+          if (active) {
+            setStreamStatus(liveState.status);
+            if (liveState.status === "connected" && liveState.zones.length > 0) {
+              setData((current) => current ? { ...current, latestTimestamp: liveState.lastWindow ?? current.latestTimestamp, zones: liveState.zones } : current);
+            }
+          }
+        })
+        .catch(() => { if (active) setStreamStatus("demo fallback"); });
+    }, 5000);
+    return () => { active = false; window.clearInterval(timer); };
   }, []);
 
   const selected = useMemo(() => data?.zones.find((zone) => zone.id === selectedZone) ?? data?.zones[0], [data, selectedZone]);
@@ -82,15 +134,16 @@ export default function Home() {
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <div className="health-card"><span className="status-dot" />Pipeline healthy<div className="health-sub">All consumers connected</div></div>
+          <div className="health-card"><span className={`status-dot ${streamStatus === "connected" ? "" : "offline-dot"}`} />{streamStatus === "connected" ? "Kafka pipeline live" : "Kafka service offline"}<div className="health-sub">{streamStatus === "connected" ? "Predictions are live" : "Showing prepared dataset"}</div></div>
           <div className="profile"><div className="avatar">DR</div><div><strong>Demo operator</strong><small>Control room</small></div><span>•••</span></div>
         </div>
       </aside>
 
       <section className="content">
-        <header className="topbar"><div><p className="eyebrow">BENGALURU / OPERATIONS</p><h1>{activeNav === "Overview" ? "Demand command center" : activeNav}</h1></div><div className="top-actions"><span className="updated"><span className="status-dot" />Streaming now</span><button className="date-button">01 Jul — 29 Aug 2026⌄</button><button className="icon-button">⚙</button></div></header>
+        <header className="topbar"><div><p className="eyebrow">BENGALURU / OPERATIONS</p><h1>{activeNav === "Overview" ? "Demand command center" : activeNav}</h1></div><div className="top-actions"><span className="updated"><span className={`status-dot ${streamStatus === "connected" ? "" : "offline-dot"}`} />{streamStatus === "connected" ? "Kafka streaming" : "Demo fallback"}</span><button className="date-button">01 Jul — 29 Aug 2026⌄</button><button className="icon-button">⚙</button></div></header>
 
         <div className="hero-strip"><div><span className="live-pill">● LIVE FORECAST</span><h2>Where should drivers move next?</h2><p>Zone-level demand predicted for the next 15 minutes, refreshed from the streaming pipeline.</p></div><div className="hero-time"><span>LAST WINDOW</span><strong>{data.latestTimestamp.replace("2026-", "").replace(" ", " · ")}</strong><small>Asia/Kolkata · 5 min window</small></div></div>
+        <section className="driver-mobile-card"><span className="section-kicker">DRIVER VIEW</span><h2>Go to {rankedZones[0]?.name}</h2><p>High demand expected in the next 15 minutes.</p><div className="driver-mobile-actions"><button onClick={() => setActiveNav("Live map")}>Show hotspot</button><button className="secondary-action" onClick={() => setSelectedZone(rankedZones[0]?.id ?? "Z30")}>Use this zone</button></div></section>
 
         <div className="stat-grid">
           <article className="stat-card"><span className="card-label">NEXT 15 MIN DEMAND</span><strong>{formatNumber(totalPrediction)}</strong><small className="positive">▲ Forecast across 52 zones</small></article>
@@ -99,7 +152,7 @@ export default function Home() {
           <article className="stat-card"><span className="card-label">MODEL WAPE</span><strong>{xgboost ? `${Number(xgboost.WAPE_percent).toFixed(1)}%` : "—"}</strong><small>Contextual XGBoost · test split</small></article>
         </div>
 
-        {activeNav !== "Overview" && <WorkspacePage page={activeNav} data={data} rankedZones={rankedZones} selectedZone={selectedZone} onSelect={setSelectedZone} live={live} onToggleLive={() => setLive(!live)} />}
+        {activeNav !== "Overview" && <WorkspacePage page={activeNav} data={data} rankedZones={rankedZones} selectedZone={selectedZone} onSelect={setSelectedZone} live={live} onToggleLive={() => setLive(!live)} streamStatus={streamStatus} />}
         {activeNav === "Overview" && <>
         <div className="main-grid">
           <section className="panel map-panel"><div className="panel-header"><div><span className="section-kicker">SPATIAL DEMAND</span><h3>Hotspots across Bengaluru</h3></div><div className="legend"><span><i className="legend-dot low" />Low</span><span><i className="legend-dot mid" />Rising</span><span><i className="legend-dot high" />Hot</span></div></div><DemandMap zones={rankedZones} coordinatesUrl="/data/zone-coordinates.json" selectedZone={selectedZone} onSelect={setSelectedZone} /></section>
@@ -108,7 +161,7 @@ export default function Home() {
 
         <div className="lower-grid">
           <section className="panel trend-panel"><div className="panel-header"><div><span className="section-kicker">TEMPORAL PATTERN</span><h3>Demand by hour</h3></div><span className="trend-caption">Dataset baseline · Jul–Aug 2026</span></div><div className="bar-chart">{data.hourly.map((point) => <div className="bar-wrap" key={point.hour} title={`${point.hour}:00 · ${formatNumber(point.demand)} requests`}><div className={point.hour >= 17 && point.hour <= 21 ? "bar peak" : "bar"} style={{ height: `${Math.max(4, (point.demand / (peak?.demand ?? 1)) * 100)}%` }} />{point.hour % 3 === 0 && <span>{point.hour}</span>}</div>)}</div><div className="chart-foot"><span>00:00</span><span className="peak-label">Evening peak · 17:00—21:00</span><span>23:00</span></div></section>
-          <section className="panel kafka-panel"><div className="panel-header"><div><span className="section-kicker">STREAMING OBSERVABILITY</span><h3>Kafka pipeline</h3></div><span className="connected"><span className="status-dot" />Connected</span></div><div className="pipeline-flow"><span>PRODUCER</span><b>→</b><span>ride_requests</span><b>→</b><span>5 MIN AGG.</span><b>→</b><span className="accent">15 MIN PRED.</span></div><div className="log-window"><div><time>19:32:04</time><span className="log-ok">INFO</span><p>Consumed 1,248 ride events</p></div><div><time>19:32:05</time><span className="log-ok">INFO</span><p>Window closed · 52 zones aggregated</p></div><div><time>19:32:05</time><span className="log-blue">PRED</span><p>Forecast published · horizon=15m</p></div><div><time>19:32:06</time><span className="log-ok">INFO</span><p>Predictions committed to storage</p></div></div><div className="kafka-footer"><span>localhost:9092</span><span>acks=all</span><span>idempotence=true</span><button onClick={() => setLive(!live)}>{live ? "Pause stream" : "Resume stream"}</button></div></section>
+          <section className="panel kafka-panel"><div className="panel-header"><div><span className="section-kicker">STREAMING OBSERVABILITY</span><h3>Kafka pipeline</h3></div><span className="connected"><span className={`status-dot ${streamStatus === "connected" ? "" : "offline-dot"}`} />{streamStatus === "connected" ? "Connected" : "Demo fallback"}</span></div><div className="pipeline-flow"><span>PRODUCER</span><b>→</b><span>ride_requests</span><b>→</b><span>5 MIN AGG.</span><b>→</b><span className="accent">15 MIN PRED.</span></div><div className="log-window"><div><time>19:32:04</time><span className="log-ok">INFO</span><p>Consumed 1,248 ride events</p></div><div><time>19:32:05</time><span className="log-ok">INFO</span><p>Window closed · 52 zones aggregated</p></div><div><time>19:32:05</time><span className="log-blue">PRED</span><p>Forecast published · horizon=15m</p></div><div><time>19:32:06</time><span className="log-ok">INFO</span><p>Predictions committed to storage</p></div></div><div className="kafka-footer"><span>localhost:9092</span><span>acks=all</span><span>idempotence=true</span><button onClick={() => setLive(!live)}>{live ? "Pause stream" : "Resume stream"}</button></div></section>
         </div>
         </>}
         <footer><span>Flowcast demo · Synthetic Bengaluru ride requests · Predictions are decision support, not guaranteed demand.</span><span>OpenStreetMap contributors · Zone coordinates are geocoded map anchors.</span></footer>
