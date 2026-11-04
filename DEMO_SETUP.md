@@ -149,6 +149,9 @@ finishing before the consumer is ready.
 - Commits Kafka offsets after a completed window
 - Uses `earliest` offsets so a fresh demo does not miss already-published replay
   events
+- Ignores duplicate `ride_id` values
+- Counts and logs late events that arrive after a finalized window
+- Flushes an active window after the configured idle period
 
 The service listens on `0.0.0.0` inside its container so the host dashboard can
 reach port 8000.
@@ -180,6 +183,9 @@ Random Forest service.
 The web image includes the Next.js standalone production output. The streaming
 service mounts the model and dashboard data read-only. The producer mounts only
 the replay script and ride dataset it needs.
+
+Kafka exposes an internal listener at `kafka:9092` for Compose services and an
+external listener at `localhost:9094` for host-side tools.
 
 ## Run the demo
 

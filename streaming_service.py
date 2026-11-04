@@ -35,6 +35,7 @@ OUTPUT_TOPIC = os.getenv("KAFKA_OUTPUT_TOPIC", "predictions")
 LOG_TOPIC = os.getenv("KAFKA_LOG_TOPIC", "pipeline_logs")
 GROUP_ID = os.getenv("KAFKA_GROUP_ID", "bengaluru-demand-predictor")
 LOG_GROUP_ID = os.getenv("KAFKA_LOG_GROUP_ID", "bengaluru-dashboard-log-reader")
+IDLE_FLUSH_SECONDS = float(os.getenv("STREAM_IDLE_FLUSH_SECONDS", "3"))
 MODEL_PATH = ROOT / "ml_results" / "models" / "RandomForest_contextual.joblib"
 ZONE_DATA_PATH = ROOT / "public" / "data" / "dashboard.json"
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -64,6 +65,8 @@ state: dict[str, Any] = {
     "consumed": 0,
     "published": 0,
     "errors": 0,
+    "duplicates": 0,
+    "lateEvents": 0,
     "logs": deque(maxlen=30),
     "zones": {},
 }
@@ -98,6 +101,25 @@ def safe_float(value: Any, default: float = 0.0) -> float:
         return default
 
 
+def event_is_active(event: dict[str, Any]) -> bool:
+    value = event.get("event_flag")
+    if isinstance(value, bool):
+        return value
+    return str(value or "").strip().lower() not in {"", "0", "false", "none", "no", "nan"}
+
+
+def normalize_context(event: dict[str, Any]) -> dict[str, Any]:
+    active = event_is_active(event)
+    return {
+        "weather": event.get("weather") or "Clear",
+        "rain_intensity": safe_float(event.get("rain_intensity")),
+        "event_flag": active,
+        "event_type": event.get("event_type") if active else "None",
+        "event_phase": event.get("event_phase") if active else "None",
+        "event_intensity": safe_float(event.get("event_intensity")) if active else 0,
+    }
+
+
 def feature_row(
     zone_id: str,
     timestamp: datetime,
@@ -106,10 +128,11 @@ def feature_row(
     context: dict[str, Any],
 ) -> dict[str, Any]:
     values = list(history)
+    completed = values + [count]
     lag = lambda intervals: values[-intervals] if len(values) >= intervals else 0.0
-    recent = values[-3:] if values else [0.0]
-    half_hour = values[-6:] if values else [0.0]
-    hour = values[-12:] if values else [0.0]
+    recent = completed[-3:]
+    half_hour = completed[-6:]
+    hour = completed[-12:]
     hour_number = timestamp.hour
     day_number = timestamp.weekday()
     return {
@@ -135,8 +158,8 @@ def feature_row(
         "Event_Impact": int(bool(context.get("event_flag"))),
         "Event_Intensity": int(safe_float(context.get("event_intensity"))),
         "Weather_Condition": context.get("weather") or "Clear",
-        "Event_Type": context.get("event_type") or "No_Event",
-        "Event_Phase": context.get("event_phase") or "No_Event",
+        "Event_Type": context.get("event_type") or "None",
+        "Event_Phase": context.get("event_phase") or "None",
     }
 
 
@@ -158,7 +181,7 @@ def publish_predictions(
         zone_id = row["Zone_ID"]
         count = row["Demand_Last_5min"]
         value = max(0.0, float(prediction))
-        context = contexts.get(zone_id, {})
+        context = contexts.get(zone_id, normalize_context({}))
         event = {
             "schema_version": 1,
             "prediction_time": timestamp.isoformat(),
@@ -252,6 +275,29 @@ def consume_loop() -> None:
     histories: dict[str, deque[float]] = defaultdict(lambda: deque(maxlen=12))
     contexts: dict[str, dict[str, Any]] = {}
     active_window: datetime | None = None
+    last_message_at = datetime.now(IST)
+    seen_ids: set[str] = set()
+    seen_order: deque[str] = deque(maxlen=100000)
+    finalized_window: datetime | None = None
+
+    def remember_event(event_id: str) -> bool:
+        if not event_id:
+            return True
+        if event_id in seen_ids:
+            return False
+        if len(seen_order) == seen_order.maxlen:
+            seen_ids.discard(seen_order.popleft())
+        seen_order.append(event_id)
+        seen_ids.add(event_id)
+        return True
+
+    def finalize_window(window: datetime) -> None:
+        nonlocal finalized_window
+        publish_predictions(model, producer, counts, histories, contexts, window)
+        for zone_id in set(ZONE_NAMES) | set(counts):
+            histories[zone_id].append(float(counts.get(zone_id, 0)))
+        finalized_window = window
+        append_log("INFO", f"Window closed · {window.strftime('%Y-%m-%d %H:%M:%S')} · {len(set(ZONE_NAMES) | set(counts))} zones")
     consumer.subscribe([INPUT_TOPIC])
     logger.info("Connected to Kafka at %s; consuming %s", BROKER, INPUT_TOPIC)
     with state_lock:
@@ -264,12 +310,25 @@ def consume_loop() -> None:
         while True:
             message = consumer.poll(1.0)
             if message is None:
+                if active_window is not None and (datetime.now(IST) - last_message_at).total_seconds() >= IDLE_FLUSH_SECONDS:
+                    finalize_window(active_window)
+                    counts.clear()
+                    contexts.clear()
+                    active_window = None
+                    consumer.commit(asynchronous=False)
                 continue
             if message.error():
                 if message.error().code() == KafkaError._PARTITION_EOF:
                     continue
                 raise KafkaException(message.error())
             event = json.loads(message.value().decode("utf-8"))
+            event_id = str(event.get("ride_id") or "")
+            if not remember_event(event_id):
+                with state_lock:
+                    state["duplicates"] += 1
+                append_log("WARN", f"Duplicate ride ignored · {event_id}")
+                continue
+            last_message_at = datetime.now(IST)
             with state_lock:
                 state["status"] = "connected"
                 if state["consumed"] % 1000 == 0:
@@ -280,19 +339,22 @@ def consume_loop() -> None:
                     })
             timestamp = parse_event_time(event.get("event_time"))
             current_window = window_start(timestamp)
+            if finalized_window is not None and current_window <= finalized_window:
+                with state_lock:
+                    state["lateEvents"] += 1
+                append_log("WARN", f"Late ride ignored · window={current_window.strftime('%H:%M:%S')}")
+                continue
             if active_window is None:
                 active_window = current_window
             if current_window != active_window:
-                publish_predictions(model, producer, counts, histories, contexts, active_window)
-                for zone_id in set(ZONE_NAMES) | set(counts):
-                    histories[zone_id].append(float(counts.get(zone_id, 0)))
+                finalize_window(active_window)
                 counts = defaultdict(int)
                 contexts = {}
                 active_window = current_window
                 consumer.commit(asynchronous=False)
             zone_id = str(event["pickup_zone_id"])
             counts[zone_id] += 1
-            contexts[zone_id] = event
+            contexts[zone_id] = normalize_context(event)
             with state_lock:
                 state["consumed"] += 1
     except Exception:

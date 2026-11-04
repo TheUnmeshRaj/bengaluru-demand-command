@@ -24,7 +24,7 @@ const initialState: KafkaState = {
   outputTopic: "predictions",
   window: "5 minutes",
   horizon: "15 minutes",
-  predictor: "Persistence_baseline",
+  predictor: "RandomForest_contextual",
   consumed: 0,
   published: 0,
   errors: 0,
@@ -35,7 +35,7 @@ export default function KafkaLogsPage() {
   const [state, setState] = useState(initialState);
 
   useEffect(() => {
-    const readState = () => fetch("http://127.0.0.1:8000/state")
+    const readState = () => fetch("/api/streaming/state")
       .then((response) => response.ok ? response.json() as Promise<KafkaState> : Promise.reject(new Error("offline")))
       .then(setState)
       .catch(() => setState((current) => ({ ...current, status: "offline" })));

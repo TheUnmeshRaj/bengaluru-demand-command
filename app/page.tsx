@@ -93,7 +93,7 @@ export default function Home() {
       .then((response) => response.json())
       .then((baseline: DashboardData) => {
         if (active) setData(baseline);
-        return fetch("http://127.0.0.1:8000/state");
+        return fetch("/api/streaming/state");
       })
       .then((response) => {
         if (!response.ok) throw new Error(`Streaming API returned ${response.status}`);
@@ -117,7 +117,7 @@ export default function Home() {
         if (active) setStreamStatus("offline");
       });
     const timer = window.setInterval(() => {
-      fetch("http://127.0.0.1:8000/state")
+      fetch("/api/streaming/state")
         .then((response) => response.ok ? response.json() as Promise<LiveState> : Promise.reject(new Error("stream unavailable")))
         .then((liveState) => {
           if (active) {
